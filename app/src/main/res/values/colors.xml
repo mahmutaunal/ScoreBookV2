@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="teal_700">#018786</color>
+    <color name="gray">#E0E0E0</color>
+
+    <color name="score_tile_blue">#D7F5F8</color>
+    <color name="score_tile_orange">#FEEBD9</color>
+    <color name="score_tile_green">#DFF7EA</color>
+    <color name="score_tile_purple">#EBE2FE</color>
+    <color name="score_tile_pink">#FDE2E4</color>
+    <color name="score_tile_yellow">#FFF9C4</color>
+    <color name="score_tile_mint">#D0F4DE</color>
+    <color name="score_tile_gray">#ECEFF1</color>
+</resources>

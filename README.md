@@ -44,5 +44,5 @@ ScoreBook is a modern, minimalistic mobile application designed for tracking sco
 ### Clone & Run
 
 ```bash
-git clone https://github.com/yourusername/ScoreBook.git
+git clone https://github.com/mahmutaunal/ScoreBook.git
 cd ScoreBook

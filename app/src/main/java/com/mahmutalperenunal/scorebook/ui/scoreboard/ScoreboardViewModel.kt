@@ -3,9 +3,9 @@ package com.mahmutalperenunal.scorebook.ui.scoreboard
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mahmutalperenunal.scorebook.utils.extensions.copyWith
 import com.mahmutalperenunal.scorebook.domain.calculator.ScoreCalculatorFactory
 import com.mahmutalperenunal.scorebook.domain.calculator.ScoreInput
+import com.mahmutalperenunal.scorebook.utils.extensions.copyWith
 import com.mahmutalperenunal.scorebook.domain.mapper.toEntity
 import com.mahmutalperenunal.scorebook.domain.mapper.toModel
 import com.mahmutalperenunal.scorebook.domain.model.GameModel
@@ -22,6 +22,7 @@ import com.mahmutalperenunal.scorebook.utils.enums.PlayerStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -34,7 +35,7 @@ class ScoreboardViewModel @Inject constructor(
     private val insertScores: InsertScoresUseCase,
     private val markGameAsEnded: MarkGameAsEndedUseCase,
     private val updatePlayerStatus: UpdatePlayerStatusUseCase,
-    private val insertGameUseCase: InsertGameUseCase
+    private val insertGameUseCase: InsertGameUseCase,
 ) : ViewModel() {
 
     private val _game = MutableStateFlow<GameModel?>(null)
@@ -49,25 +50,28 @@ class ScoreboardViewModel @Inject constructor(
     private val _totalScores = MutableStateFlow<Map<String, Int>>(emptyMap())
     val totalScores: StateFlow<Map<String, Int>> = _totalScores
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     fun loadGame(gameId: String) {
         viewModelScope.launch {
-            val gameEntity = getGameById(gameId)
-            gameEntity?.let {
-                val model = it.toModel()
-                _game.value = model
-                _players.value = getPlayers(gameId).map { p -> p.toModel() }
-
-                Log.d("LoadedPlayers", _players.value.joinToString { "${it.name}: ${it.id}" })
-
-                if (_scores.value.isEmpty()) {
-                    launch {
-                        observeScores(gameId).collect { scoreList ->
-                            val scoreModels = scoreList.map { s -> s.toModel() }
-                            _scores.value = scoreModels
-                            _totalScores.value = calculateTotals(scoreModels)
-                        }
-                    }
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val gameEntity = getGameById(gameId) ?: return@launch
+                _game.value = gameEntity.toModel()
+                _players.value = getPlayers(gameId).map { it.toModel() }
+                observeScores(gameId).collectLatest { scores ->
+                    _scores.value = scores.map { it.toModel() }
+                    _totalScores.value = calculateTotals(_scores.value)
                 }
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _isLoading.value = false
             }
         }
     }

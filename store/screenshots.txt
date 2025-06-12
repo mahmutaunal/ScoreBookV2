@@ -1,0 +1,31 @@
+Required Screenshots:
+
+1. Phone Screenshots (1080x1920):
+   - Main scoreboard screen
+   - Game summary screen
+   - Calculator screen
+   - Settings screen
+   - Dark mode view
+   - Game history screen
+   - Favorites screen
+
+2. Tablet Screenshots (1920x1200):
+   - Main scoreboard screen
+   - Game summary screen
+   - Calculator screen
+   - Settings screen
+   - Dark mode view
+   - Game history screen
+   - Favorites screen
+
+3. Feature Graphic (1024x500):
+   - App logo
+   - Main features
+   - Tagline
+
+4. App Icon (512x512):
+   - App logo
+   - Brand colors
+   - Clean design
+
+Note: All screenshots should be in PNG format and showcase the app's best features and UI elements. 

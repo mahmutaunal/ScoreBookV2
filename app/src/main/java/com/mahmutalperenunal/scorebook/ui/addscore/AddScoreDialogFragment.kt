@@ -9,8 +9,10 @@ import android.widget.*
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.mahmutalperenunal.scorebook.R
 import com.mahmutalperenunal.scorebook.databinding.FragmentAddScoreDialogBinding
 import com.mahmutalperenunal.scorebook.domain.model.PlayerModel
 import com.mahmutalperenunal.scorebook.utils.constants.GameSettingKeys
@@ -102,70 +104,179 @@ class AddScoreDialogFragment : DialogFragment() {
     }
 
     private fun setupGameSettings() {
-        if (gameSettings.isEmpty()) {
-            binding.llGameSettings.visibility = View.GONE
-            return
+        val gameSettings = arguments?.getSerializable(ARG_GAME_SETTINGS) as? HashMap<String, Any> ?: return
+        val settingsLayout = binding.llGameSettings
+
+        when (gameSettings["gameType"]) {
+            "BATAK" -> {
+                settingsLayout.visibility = View.VISIBLE
+                addBatakSettings(gameSettings)
+            }
+            "BRIDGE" -> {
+                settingsLayout.visibility = View.VISIBLE
+                addBridgeSettings(gameSettings)
+            }
+            "PIQUE" -> {
+                settingsLayout.visibility = View.VISIBLE
+                addPiqueSettings(gameSettings)
+            }
+            "UNO" -> {
+                settingsLayout.visibility = View.VISIBLE
+                addUnoSettings(gameSettings)
+            }
+            else -> settingsLayout.visibility = View.GONE
+        }
+    }
+
+    private fun addBatakSettings(settings: HashMap<String, Any>) {
+        val context = requireContext()
+        val layout = binding.llGameSettings
+
+        // Auction Required
+        addSwitchSetting(
+            layout,
+            "Auction Required",
+            settings["batakAuctionRequired"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["batakAuctionRequired"] = isChecked
         }
 
-        binding.llGameSettings.visibility = View.VISIBLE
+        // Min Auction Score
+        addNumberInputSetting(
+            layout,
+            "Min Auction Score",
+            settings["batakMinAuctionScore"] as? Int ?: 0
+        ) { value ->
+            settings["batakMinAuctionScore"] = value
+        }
 
-        gameSettings.forEach { (key, value) ->
-            val label = settingNameMap[key] ?: key
+        // Overbid Penalty
+        addSwitchSetting(
+            layout,
+            "Overbid Penalty",
+            settings["batakOverbidPenalty"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["batakOverbidPenalty"] = isChecked
+        }
+    }
 
-            when (value) {
-                is Boolean -> {
-                    val switch = Switch(requireContext()).apply {
-                        text = label
-                        isChecked = value
-                    }
-                    binding.llGameSettings.addView(switch)
-                    settingInputs[key] = switch
-                }
+    private fun addBridgeSettings(settings: HashMap<String, Any>) {
+        val context = requireContext()
+        val layout = binding.llGameSettings
 
-                is Int -> {
-                    val inputLayout = TextInputLayout(
-                        requireContext(),
-                        null,
-                        com.google.android.material.R.style.Widget_Material3_TextInputLayout_OutlinedBox
-                    ).apply {
-                        hint = label
-                        boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-                        endIconMode = TextInputLayout.END_ICON_CLEAR_TEXT
-                    }
-                    val input = TextInputEditText(requireContext()).apply {
-                        inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                        setText(value.toString())
-                    }
-                    inputLayout.addView(input)
-                    binding.llGameSettings.addView(inputLayout)
-                    settingInputs[key] = input
-                }
+        // Round Count
+        addNumberInputSetting(
+            layout,
+            "Round Count",
+            settings["bridgeRoundCount"] as? Int ?: 1
+        ) { value ->
+            settings["bridgeRoundCount"] = value
+        }
 
-                is String -> {
-                    val options = dropdownOptionsMap[key]
-                    if (options != null) {
-                        val title = TextView(requireContext()).apply {
-                            text = label
-                            textSize = 16f
-                            setPadding(0, 16, 0, 8)
-                        }
+        // Timed Match
+        addSwitchSetting(
+            layout,
+            "Timed Match",
+            settings["bridgeTimedMatch"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["bridgeTimedMatch"] = isChecked
+        }
 
-                        val spinner = Spinner(requireContext()).apply {
-                            adapter = ArrayAdapter(
-                                requireContext(),
-                                android.R.layout.simple_spinner_dropdown_item,
-                                options
-                            )
-                            setSelection(options.indexOf(value).coerceAtLeast(0))
-                        }
+        // Use IMP
+        addSwitchSetting(
+            layout,
+            "Use IMP",
+            settings["bridgeUseIMP"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["bridgeUseIMP"] = isChecked
+        }
+    }
 
-                        binding.llGameSettings.addView(title)
-                        binding.llGameSettings.addView(spinner)
-                        settingInputs[key] = spinner
-                    }
+    private fun addPiqueSettings(settings: HashMap<String, Any>) {
+        val context = requireContext()
+        val layout = binding.llGameSettings
+
+        // Special Cards
+        addSwitchSetting(
+            layout,
+            "Special Cards",
+            settings["piqueSpecialCards"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["piqueSpecialCards"] = isChecked
+        }
+
+        // Draw Penalty
+        addSwitchSetting(
+            layout,
+            "Draw Penalty",
+            settings["piqueDrawPenalty"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["piqueDrawPenalty"] = isChecked
+        }
+    }
+
+    private fun addUnoSettings(settings: HashMap<String, Any>) {
+        val context = requireContext()
+        val layout = binding.llGameSettings
+
+        // Special Card Penalty
+        addSwitchSetting(
+            layout,
+            "Special Card Penalty",
+            settings["unoSpecialCardPenalty"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["unoSpecialCardPenalty"] = isChecked
+        }
+
+        // Reverse Penalty
+        addSwitchSetting(
+            layout,
+            "Reverse Penalty",
+            settings["unoReversePenalty"] as? Boolean ?: false
+        ) { isChecked ->
+            settings["unoReversePenalty"] = isChecked
+        }
+    }
+
+    private fun addSwitchSetting(
+        parent: ViewGroup,
+        title: String,
+        initialValue: Boolean,
+        onValueChanged: (Boolean) -> Unit
+    ) {
+        val switch = MaterialSwitch(requireContext()).apply {
+            text = title
+            isChecked = initialValue
+            setOnCheckedChangeListener { _, isChecked ->
+                onValueChanged(isChecked)
+            }
+        }
+        parent.addView(switch)
+    }
+
+    private fun addNumberInputSetting(
+        parent: ViewGroup,
+        title: String,
+        initialValue: Int,
+        onValueChanged: (Int) -> Unit
+    ) {
+        val inputLayout = TextInputLayout(requireContext()).apply {
+            hint = title
+        }
+
+        val editText = TextInputEditText(requireContext()).apply {
+            setText(initialValue.toString())
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    val value = text.toString().toIntOrNull() ?: initialValue
+                    onValueChanged(value)
                 }
             }
         }
+
+        inputLayout.addView(editText)
+        parent.addView(inputLayout)
     }
 
     private fun setupClicks() {

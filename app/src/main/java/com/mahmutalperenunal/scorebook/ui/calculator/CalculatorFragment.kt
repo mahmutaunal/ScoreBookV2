@@ -1,10 +1,12 @@
 package com.mahmutalperenunal.scorebook.ui.calculator
 
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import com.mahmutalperenunal.scorebook.R
@@ -17,6 +19,8 @@ class CalculatorFragment : Fragment() {
 
     private var _binding: FragmentCalculatorBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: CalculatorViewModel by viewModels()
 
     private var expression = StringBuilder()
     private var lastNumeric = false
@@ -150,6 +154,12 @@ class CalculatorFragment : Fragment() {
             index += 2
         }
         return result
+    }
+
+    private fun performHapticFeedback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM)
+        }
     }
 
     override fun onDestroyView() {

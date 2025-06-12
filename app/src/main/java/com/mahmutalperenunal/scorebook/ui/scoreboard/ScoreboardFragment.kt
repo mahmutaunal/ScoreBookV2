@@ -16,6 +16,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.mahmutalperenunal.scorebook.R
 import com.mahmutalperenunal.scorebook.utils.extensions.toMap
 import com.mahmutalperenunal.scorebook.databinding.FragmentScoreboardBinding
@@ -108,15 +109,26 @@ class ScoreboardFragment : Fragment(R.layout.fragment_scoreboard) {
 
     private fun setupButtons() {
         binding.btnAddScore.setOnClickListener {
+            performHapticFeedback()
             openAddScoreDialog()
         }
 
         binding.btnGameSummary.setOnClickListener {
+            performHapticFeedback()
             findNavController().navigate(ScoreboardFragmentDirections.actionScoreboardToSummary(args.gameId))
         }
 
         binding.btnEndGame.setOnClickListener {
+            performHapticFeedback()
             showEndGameConfirmation()
+        }
+    }
+
+    private fun performHapticFeedback() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM)
+        } else {
+            binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
         }
     }
 
@@ -235,8 +247,14 @@ class ScoreboardFragment : Fragment(R.layout.fragment_scoreboard) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    viewModel.isLoading.collectLatest { isLoading ->
+                        /*binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+                        binding.contentLayout.visibility = if (isLoading) View.GONE else View.VISIBLE*/
+                    }
+                }
+
+                launch {
                     viewModel.players.collectLatest { players ->
-                        Log.d("PlayersFlow", players.joinToString { "${it.name}: ${it.id}" })
                         nameAdapter.submitList(players)
                     }
                 }

@@ -35,6 +35,12 @@ class GameSummaryViewModel @Inject constructor(
     private var scoresJob: Job? = null
     private var scoresScope: CoroutineScope? = null
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     fun loadSummary(gameId: String) {
         if (gameId == currentGameId) return
 

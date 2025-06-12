@@ -1,6 +1,7 @@
 package com.mahmutalperenunal.scorebook.ui.summary
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -59,7 +60,16 @@ class GameSummaryFragment : Fragment(R.layout.fragment_game_summary) {
     private fun observeSummary() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.summary.collectLatest { it?.let(::displaySummary) }
+                launch {
+                    viewModel.isLoading.collectLatest { isLoading ->
+                        /*binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+                        binding.contentLayout.visibility = if (isLoading) View.GONE else View.VISIBLE*/
+                    }
+                }
+
+                launch {
+                    viewModel.summary.collectLatest { it?.let(::displaySummary) }
+                }
             }
         }
     }
@@ -106,6 +116,7 @@ class GameSummaryFragment : Fragment(R.layout.fragment_game_summary) {
 
     private fun setupClicks() {
         binding.btnFinishGame.setOnClickListener {
+            performHapticFeedback()
             val intent = Intent(requireContext(), MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
@@ -113,14 +124,20 @@ class GameSummaryFragment : Fragment(R.layout.fragment_game_summary) {
         }
 
         binding.btnRestartGame.setOnClickListener {
-            // TODO: Yeni bir oyun başlatmak için Home’a yönlendirme yapılabilir.
+            performHapticFeedback()
+            val intent = Intent(requireContext(), MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
         }
 
         binding.btnFavorite.setOnClickListener {
+            performHapticFeedback()
             viewModel.toggleFavorite()
         }
 
         binding.btnShare.setOnClickListener {
+            performHapticFeedback()
             viewModel.summary.value?.let { summary ->
                 val winner = summary.winner?.name ?: "-"
                 val totalScores = summary.players.joinToString("\n") {
@@ -134,6 +151,12 @@ class GameSummaryFragment : Fragment(R.layout.fragment_game_summary) {
                 }
                 startActivity(Intent.createChooser(intent, getString(R.string.share)))
             }
+        }
+    }
+
+    private fun performHapticFeedback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            binding.root.performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM)
         }
     }
 
